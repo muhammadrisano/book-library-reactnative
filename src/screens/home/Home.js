@@ -5,8 +5,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Modal from "react-native-modal";
 import { connect } from 'react-redux'
 import { getBooks } from '../../redux/actions/books'
-import ImagePicker from 'react-native-image-picker'
 import { inputBook } from '../../redux/actions/books'
+import ImagePicker from 'react-native-image-picker'
 // import AsyncStorage from '@react-native-community/async-storage';
 class Home extends Component {
 
@@ -48,9 +48,15 @@ class Home extends Component {
 
   prosesInput = async () => {
     const dataFile = new FormData()
-    // console.warn( this.state.photo)
-    dataFile.append('image', this.state.photo)
-    dataFile.append('name', this.state.name)
+    console.warn(this.state.photo)
+    dataFile.append('image',
+      {
+        uri: this.state.photo.uri,
+        type: 'image/jpeg',
+        name: 'terserahdah'
+      }
+    ),
+      dataFile.append('name', this.state.name)
     dataFile.append('writer', this.state.location)
     dataFile.append('location', this.state.writer)
     dataFile.append('description', this.state.description)
@@ -60,8 +66,9 @@ class Home extends Component {
     await this.props.dispatch(inputBook(dataFile))
       .then((response) => {
 
-        this.props.navigation.navigate('Home')
-
+        this.toggleModal()
+        Alert.alert("donate berhasil")
+        this.getdataBook()
       })
 
 
@@ -110,13 +117,39 @@ class Home extends Component {
     );
   }
 
-  componentDidMount = async () => {
-
+  getdataBook = async () => {
     await this.props.dispatch(getBooks())
+  }
+  componentDidMount = () => {
+    this.getdataBook()
 
   }
 
 
+  chooseFile = () => {
+    var options = {
+      title: 'Pilih Photo !',
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+    ImagePicker.showImagePicker(options, response => {
+      console.log('Response = ', response);
+      if (response.didCancel) {
+        console.log('Cancel');
+        alert('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+        alert('ImagePicker Error: ' + response.error);
+      } else {
+        let source = response;
+        this.setState({
+          photo: source,
+        });
+      }
+    });
+  };
   render() {
 
 
@@ -213,7 +246,7 @@ class Home extends Component {
                   </Item>
 
 
-                  <Button info onPress={this.handleChoosePhoto} style={{ width: 200, marginTop: 20, borderRadius: 40 }}><Text>Upload Gambar </Text></Button>
+                  <Button info onPress={this.chooseFile.bind(this)} style={{ width: 200, marginTop: 20, borderRadius: 40 }}><Text>Upload Gambar </Text></Button>
                   {/* <Button title="Choose Photo" onPress={this.handleChoosePhoto} /> */}
 
                   <Item floatingLabel style={{ marginTop: 0 }}>
