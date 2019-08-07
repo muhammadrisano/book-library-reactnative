@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert, TouchableOpacity, AsyncStorage, TouchableHighlight, Image } from 'react-native'
+import { Alert, TouchableOpacity, AsyncStorage, TouchableHighlight, Image, FlatList } from 'react-native'
 import { H2, Container, Label, Header, Title, Button, Icon, CardItem, Text, Left, Right, Card, View, Body, Content, Form, Item, Picker, Input } from "native-base";
 import { ScrollView } from 'react-native-gesture-handler';
 import Modal from "react-native-modal";
@@ -22,7 +22,13 @@ class Home extends Component {
       location: "",
       id_category: "",
       status: "",
-      photo: null
+      photo: null,
+      loading: false,
+      data: [],
+      page: 1,
+      seed: 1,
+      error: null,
+      refreshing: false,
     }
   }
 
@@ -118,7 +124,19 @@ class Home extends Component {
   }
 
   getdataBook = async () => {
-    await this.props.dispatch(getBooks())
+    this.setState({ loading: true })
+    await this.props.dispatch(getBooks(this.state.page))
+      .then(res => {
+
+        this.setState({
+          data: this.state.page === 1 ? res.action.payload.data.result : [...this.state.data, ...res.action.payload.data.result],
+          error: res.error || null,
+          loading: false,
+          refreshing: false
+        });
+      })
+    console.warn("basdfsadfsadfsadf")
+    console.warn(res.action.payload.data.result)
   }
   componentDidMount = () => {
     this.getdataBook()
@@ -150,8 +168,43 @@ class Home extends Component {
       }
     });
   };
-  render() {
 
+  handleReflesh = () => {
+    this.setState(
+      {
+        page: 1,
+        refreshing: true,
+        seed: this.state.seed + 1
+      },
+      () => {
+        this.getdataBook();
+      }
+    )
+  }
+
+  handleLoadMore = () => {
+    this.setState(
+      {
+        page: this.state.page + 1
+      },
+      () => {
+        this.getdataBook();
+      }
+    )
+  }
+
+  renderSeparator = () => {
+    return (
+      <View style={{
+        flex: 1,
+        flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', backgroundColor: 'blue'
+      }} />
+    )
+
+  }
+
+  render() {
+    console.warn(this.state.data)
 
     // console.warn(a.token)
     console.warn(AsyncStorage.getItem('token'))
@@ -180,55 +233,59 @@ class Home extends Component {
             </Item>
 
           </View>
-          <View style={{
-            flex: 1,
-            flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center',
-          }}>
 
-            {/* card bokok */}
-            <>
+
+          {/* card bokok */}
 
 
 
-              {this.props.bookshow.map((item) =>
+          <FlatList
+            data={this.state.data}
+            renderItem={({ item }) => (
 
-                <Card style={{
-                  width: "43%", marginLeft: 17, marginBottom: 15, shadowColor: "#000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 3,
-                  },
-                  shadowOpacity: 0.29,
-                  shadowRadius: 4.65,
+              <Card style={{
+                width: "43%", marginLeft: 4, marginBottom: 15, shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 3,
+                },
+                shadowOpacity: 0.29,
+                shadowRadius: 4.65,
 
-                  elevation: 7, borderRadius: 10
-                }} key={item.id_book}>
-                  <TouchableOpacity onPress={() => this.props.navigation.navigate('Detailbook', {
-                    bookdetail: item
-                  })}>
-                    <CardItem cardBody style={{ borderRadius: 10 }}>
-                      <Image source={{ uri: item.image }} style={{ height: 150, width: null, flex: 1, borderRadius: 10 }} />
-                    </CardItem>
-                  </TouchableOpacity>
-                  <CardItem style={{ borderRadius: 10 }}>
-                    <Left>
-
-                      <Text>{item.name}</Text>
-
-                    </Left>
+                elevation: 7, borderRadius: 10
+              }} key={item.id_book}>
+                <TouchableOpacity onPress={() => this.props.navigation.navigate('Detailbook', {
+                  bookdetail: item
+                })}>
+                  <CardItem cardBody style={{ borderRadius: 10 }}>
+                    <Image source={{ uri: item.image }} style={{ height: 150, width: null, flex: 1, borderRadius: 10 }} />
                   </CardItem>
-                </Card>
+                </TouchableOpacity>
+                <CardItem style={{ borderRadius: 10 }}>
+                  <Left>
+
+                    <Text>{item.name}</Text>
+
+                  </Left>
+                </CardItem>
+              </Card>
+
+            )}
+
+            onEndReached={this.handleLoadMore}
+            onEndThreshold={100}
+            ItemSeparatorComponent={this.renderSeparator}
+            listHeaderComponent={this.renderSeparator}
+          />
 
 
-              )}
 
 
 
-            </>
 
 
 
-          </View>
+
 
 
         </ScrollView>
@@ -292,7 +349,7 @@ class Home extends Component {
 
         {/* end modal donate */}
 
-      </Container>
+      </Container >
 
     )
   }
