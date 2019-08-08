@@ -6,6 +6,7 @@ import moment from 'moment'
 import Modal from "react-native-modal";
 import { connect } from "react-redux"
 import { borrowuser } from '../../redux/actions/loanbooks'
+import { Overlay } from 'react-native-elements';
 class Detailbook extends Component {
   constructor(props) {
     super(props);
@@ -20,7 +21,8 @@ class Detailbook extends Component {
       fullname: null,
       id_user: null,
       role_id: null,
-      token: null
+      token: null,
+      isVisible: false
     }
 
     AsyncStorage.getItem('card_number', (error, result) => {
@@ -97,7 +99,7 @@ class Detailbook extends Component {
   }
 
   toggleModal = () => {
-    this.setState({ isModalVisible: !this.state.isModalVisible });
+    this.setState({ isVisible: !this.state.isVisible });
   };
 
   render() {
@@ -124,55 +126,55 @@ class Detailbook extends Component {
         </Button>
 
         {/* modal donate */}
-        <View style={{ flex: 1 }}>
-          <Modal isVisible={this.state.isModalVisible}>
-            <View style={{ flex: 1 }}>
+        <Overlay
+          isVisible={this.state.isVisible}
+          windowBackgroundColor="rgba(0, 0, 0, .5)"
+          overlayBackgroundColor="none"
+          width={300}
+          height="auto"
+        >
 
-              {/* <Text>Judul Buku : {this.state.name} </Text>
+          {/* <Text>Judul Buku : {this.state.name} </Text>
                 <Text>Penulis : {this.state.writer}</Text>
                 <Text>Nama Peminjam : </Text>
                 <Text>Number Card :</Text>
                 <Text>Tanggal Pengembalian :</Text> */}
-              <Content>
-                <Card style={{ height: 500 }}>
-                  <CardItem>
-                    <Left>
+          <Card style={{ height: 500 }} style={{ marginTop: -9, marginRight: -9, marginLeft: -9, marginBottom: -9, }}>
+            <CardItem>
+              <Left>
 
-                      <Text>{this.state.name}</Text>
+                <Text>{this.state.name}</Text>
 
-                    </Left>
-                  </CardItem>
-                  <CardItem cardBody>
-                    <Image source={{ uri: this.state.image }} style={{ height: 200, width: null, flex: 1 }} />
-                  </CardItem>
-                  <CardItem>
-                    <Text> Penulis : {this.state.writer}</Text>
-                  </CardItem>
-                  <CardItem style={{ marginTop: -15, }}>
-                    <Text style={{ margin: 0, }}> Tanggal Kembali : {moment().add(10, 'days').calendar()}</Text>
-                  </CardItem>
-                  <CardItem>
-                    <Text> Nama Peminjam : {this.state.fullname}</Text>
-                  </CardItem>
-                  <CardItem style={{ marginTop: -15, }}>
-                    <Text> Card Number : {this.state.card_number}</Text>
-                  </CardItem>
-                  <CardItem>
-                    <Left>
-                      <Button danger onPress={this.toggleModal}><Text> Cancel </Text></Button>
-                    </Left>
-                    <Body>
-                      <Button primary onPress={this.handlerBorrow}><Text> Borrow </Text></Button>
-                    </Body>
+              </Left>
+            </CardItem>
+            <CardItem cardBody>
+              <Image source={{ uri: this.state.image }} style={{ height: 200, width: null, flex: 1 }} />
+            </CardItem>
+            <CardItem>
+              <Text> Penulis : {this.state.writer}</Text>
+            </CardItem>
+            <CardItem style={{ marginTop: -15, }}>
+              <Text style={{ margin: 0, }}> Tanggal Kembali : {moment().add(10, 'days').calendar()}</Text>
+            </CardItem>
+            <CardItem>
+              <Text> Nama Peminjam : {this.state.fullname}</Text>
+            </CardItem>
+            <CardItem style={{ marginTop: -15, }}>
+              <Text> Card Number : {this.state.card_number}</Text>
+            </CardItem>
+            <CardItem>
 
-                  </CardItem>
-                </Card>
-              </Content>
+              <Button danger onPress={this.toggleModal} style={{ marginLeft: 60 }}><Text> Cancel </Text></Button>
 
 
-            </View>
-          </Modal>
-        </View>
+              <Button primary onPress={this.handlerBorrow} style={{ marginLeft: 10 }}><Text> Borrow </Text></Button>
+
+
+            </CardItem>
+          </Card>
+
+
+        </Overlay>
 
         {/* end modal donate */}
 

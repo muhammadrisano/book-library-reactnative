@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import { Alert, TouchableOpacity, AsyncStorage, TouchableHighlight, Image, FlatList } from 'react-native'
-import { H2, Container, Label, Header, Title, Button, Icon, CardItem, Text, Left, Right, Card, View, Body, Content, Form, Item, Picker, Input } from "native-base";
+import { ActivityIndicator, Alert, TouchableOpacity, AsyncStorage, TouchableHighlight, Image, FlatList, StyleSheet } from 'react-native'
+import { H2, Container, Label, Header, Title, Button, Icon, CardItem, Text, Left, Right, Card, View, Body, Content, Form, Item, Picker, Input, Spinner } from "native-base";
 import { ScrollView } from 'react-native-gesture-handler';
 import Modal from "react-native-modal";
 import { connect } from 'react-redux'
 import { getBooks } from '../../redux/actions/books'
 import { inputBook } from '../../redux/actions/books'
 import ImagePicker from 'react-native-image-picker'
+import { SearchBar } from 'react-native-elements';
+import { Overlay } from 'react-native-elements';
 // import AsyncStorage from '@react-native-community/async-storage';
 class Home extends Component {
 
@@ -14,7 +16,7 @@ class Home extends Component {
     super(props)
     this.state = {
       counter: 0,
-      isModalVisible: false,
+      isVisible: false,
       name: "",
       image: "",
       writer: "",
@@ -23,17 +25,18 @@ class Home extends Component {
       id_category: "",
       status: "",
       photo: null,
-      loading: false,
+      loading: true,
       data: [],
       page: 1,
       seed: 1,
       error: null,
       refreshing: false,
+      jumlahpage: null
     }
   }
 
   toggleModal = () => {
-    this.setState({ isModalVisible: !this.state.isModalVisible });
+    this.setState({ isVisible: !this.state.isVisible });
   };
 
   handleChoosePhoto = () => {
@@ -54,7 +57,7 @@ class Home extends Component {
 
   prosesInput = async () => {
     const dataFile = new FormData()
-    console.warn(this.state.photo)
+
     dataFile.append('image',
       {
         uri: this.state.photo.uri,
@@ -68,15 +71,25 @@ class Home extends Component {
     dataFile.append('description', this.state.description)
     dataFile.append('id_category', this.state.id_category)
 
-    // console.log(this.state)
+
     await this.props.dispatch(inputBook(dataFile))
       .then((response) => {
 
+        this.setState({
+          name: "",
+          image: "",
+          writer: "",
+          description: "",
+          location: "",
+          id_category: "",
+          page: 1,
+        })
+
         this.toggleModal()
         Alert.alert("donate berhasil")
-        this.getdataBook()
-      })
+        this.handleReflesh()
 
+      })
 
   }
   handlerChangeWriter = (e) => {
@@ -104,8 +117,7 @@ class Home extends Component {
   }
   _alert(string) {
     Alert.alert(string)
-    console.warn(string)
-    console.warn(" ini store" + AsyncStorage.getItem('token'))
+
   }
   question = () => {
     Alert.alert(
@@ -123,20 +135,33 @@ class Home extends Component {
     );
   }
 
-  getdataBook = async () => {
+  getdataBook = () => {
     this.setState({ loading: true })
-    await this.props.dispatch(getBooks(this.state.page))
-      .then(res => {
+    setTimeout(async () => {
 
-        this.setState({
-          data: this.state.page === 1 ? res.action.payload.data.result : [...this.state.data, ...res.action.payload.data.result],
-          error: res.error || null,
-          loading: false,
-          refreshing: false
-        });
-      })
-    console.warn("basdfsadfsadfsadf")
-    console.warn(res.action.payload.data.result)
+      await this.props.dispatch(getBooks(this.state.page))
+        .then(res => {
+          this.setState({
+            data: this.state.page === 1 ? res.action.payload.data.result : [...this.state.data, ...res.action.payload.data.result],
+            error: res.error || null,
+            loading: false,
+            refreshing: false,
+            jumlahpage: Math.ceil(parseInt(res.action.payload.data.jumlah) / 12)
+          });
+          if (this.state.page > this.state.jumlahpage) {
+            this.setState({
+              loading: false,
+              error: true
+            })
+            Alert.alert("sorry the page is up ")
+
+          }
+        })
+        .catch(error => {
+          this.setState({ errr, loading: false, refreshing: false })
+        })
+    }, 3000)
+
   }
   componentDidMount = () => {
     this.getdataBook()
@@ -153,12 +178,11 @@ class Home extends Component {
       },
     };
     ImagePicker.showImagePicker(options, response => {
-      console.log('Response = ', response);
+
       if (response.didCancel) {
-        console.log('Cancel');
+
         alert('User cancelled image picker');
       } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
         alert('ImagePicker Error: ' + response.error);
       } else {
         let source = response;
@@ -185,6 +209,7 @@ class Home extends Component {
   handleLoadMore = () => {
     this.setState(
       {
+        loading: true,
         page: this.state.page + 1
       },
       () => {
@@ -193,21 +218,28 @@ class Home extends Component {
     )
   }
 
-  renderSeparator = () => {
+  renderHeader = () => {
     return (
-      <View style={{
-        flex: 1,
-        flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', backgroundColor: 'blue'
-      }} />
+      <Item rounded style={{ marginBottom: 20 }}>
+        <Input placeholder='Search Book' />
+      </Item>
     )
-
   }
 
-  render() {
-    console.warn(this.state.data)
+  renderFooter = () => {
+    // if (!this.state.loading) return null;
 
-    // console.warn(a.token)
-    console.warn(AsyncStorage.getItem('token'))
+    return (
+      <View>
+        <ActivityIndicator size="large" color="#0000ff" width={10} />
+      </View>
+    )
+  }
+
+  // }
+
+  render() {
+
     return (
       <Container>
 
@@ -226,126 +258,132 @@ class Home extends Component {
             </Button>
           </Right>
         </Header>
-        <ScrollView>
-          <View style={{ marginTop: 20, width: '90%', marginRight: 'auto', marginLeft: 'auto' }}>
-            <Item rounded style={{ marginBottom: 20 }}>
-              <Input placeholder='Search Book' />
+        {/* <ScrollView> */}
+        <View style={{ marginTop: 20, width: '90%', marginRight: 'auto', marginLeft: 'auto' }}>
+
+
+        </View>
+
+
+        {/* card bokok */}
+
+
+
+        <FlatList
+
+          numColumns={2}
+          data={this.state.data}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+
+            <Card style={{
+              width: 150, marginLeft: 12, marginBottom: 20, shadowColor: "#000", backgroundColor: "rgb(224, 217, 220)",
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+              shadowOpacity: 0.29,
+              shadowRadius: 4.65,
+
+              elevation: 7, borderRadius: 10
+            }} key={item.id_book}>
+              <TouchableOpacity onPress={() => this.props.navigation.navigate('Detailbook', {
+                bookdetail: item
+              })}>
+                <CardItem cardBody style={{ borderRadius: 10 }}>
+                  <Image source={{ uri: item.image }} style={{ height: 150, width: null, flex: 1, borderRadius: 10 }} />
+                </CardItem>
+              </TouchableOpacity>
+              <CardItem style={{ borderRadius: 10, backgroundColor: "rgb(224, 217, 220)" }}>
+                <Left>
+
+                  <Text>{item.name}</Text>
+
+                </Left>
+              </CardItem>
+            </Card>
+
+          )}
+          onEndReached={this.handleLoadMore}
+          onEndThreshold={140}
+          ListHeaderComponent={this.renderHeader}
+          ListFooterComponent={this.renderFooter}
+          refreshing={this.state.refreshing}
+          onRefresh={this.handleReflesh}
+        // ItemSeparatorComponent={this.renderSeparator}
+        // listHeaderComponent={this.renderSeparator}
+        />
+
+
+
+
+
+
+
+
+
+
+        {/* </ScrollView> */}
+        {/* modal donate */}
+        <Overlay
+          isVisible={this.state.isVisible}
+          windowBackgroundColor="rgba(0, 0, 0, .5)"
+          overlayBackgroundColor="white"
+          width={320}
+          height={530}
+        >
+
+
+          <H2 style={{ marginTop: 10, marginBottom: 10, marginLeft: 'auto', marginRight: 'auto' }}>Donate Book </H2>
+          <Form>
+            <Item floatingLabel>
+              <Label>Title Book</Label>
+              <Input onChangeText={(name) => this.setState({ name })}
+                value={this.state.name} />
             </Item>
 
-          </View>
 
+            <Button info onPress={this.chooseFile.bind(this)} transparent><Text style={{ fontSize: 16, marginTop: 22 }}>Upload Image </Text></Button>
+            {/* <Button title="Choose Photo" onPress={this.handleChoosePhoto} /> */}
 
-          {/* card bokok */}
+            <Item floatingLabel style={{ marginTop: 0 }}>
+              <Label>Writer</Label>
+              <Input onChangeText={(writer) => this.setState({ writer })}
+                value={this.state.writer} />
+            </Item>
 
+            <Item floatingLabel>
+              <Label>Description</Label>
+              <Input onChangeText={(description) => this.setState({ description })}
+                value={this.state.description} />
+            </Item>
 
+            <Item floatingLabel>
+              <Label>Location</Label>
+              <Input onChangeText={(location) => this.setState({ location })}
+                value={this.state.location} />
+            </Item>
 
-          <FlatList
-            data={this.state.data}
-            renderItem={({ item }) => (
-
-              <Card style={{
-                width: "43%", marginLeft: 4, marginBottom: 15, shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 3,
-                },
-                shadowOpacity: 0.29,
-                shadowRadius: 4.65,
-
-                elevation: 7, borderRadius: 10
-              }} key={item.id_book}>
-                <TouchableOpacity onPress={() => this.props.navigation.navigate('Detailbook', {
-                  bookdetail: item
-                })}>
-                  <CardItem cardBody style={{ borderRadius: 10 }}>
-                    <Image source={{ uri: item.image }} style={{ height: 150, width: null, flex: 1, borderRadius: 10 }} />
-                  </CardItem>
-                </TouchableOpacity>
-                <CardItem style={{ borderRadius: 10 }}>
-                  <Left>
-
-                    <Text>{item.name}</Text>
-
-                  </Left>
-                </CardItem>
-              </Card>
-
-            )}
-
-            onEndReached={this.handleLoadMore}
-            onEndThreshold={100}
-            ItemSeparatorComponent={this.renderSeparator}
-            listHeaderComponent={this.renderSeparator}
-          />
-
-
-
-
-
-
-
-
-
-
-
-        </ScrollView>
-        {/* modal donate */}
-        <View style={{ flex: 1 }}>
-          <Modal isVisible={this.state.isModalVisible}>
-            <View style={{ flex: 1 }}>
-              <Content style={{ backgroundColor: "white", width: '98%', marginLeft: "auto", marginRight: "auto", padding: 10, }}>
-                <H2 style={{ marginTop: 10, marginBottom: 10, marginLeft: 'auto', marginRight: 'auto' }}>Donate Book </H2>
-                <Form>
-                  <Item floatingLabel>
-                    <Label>Title Book</Label>
-                    <Input onChangeText={(name) => this.setState({ name })}
-                      value={this.state.name} />
-                  </Item>
-
-
-                  <Button info onPress={this.chooseFile.bind(this)} style={{ width: 200, marginTop: 20, borderRadius: 40 }}><Text>Upload Gambar </Text></Button>
-                  {/* <Button title="Choose Photo" onPress={this.handleChoosePhoto} /> */}
-
-                  <Item floatingLabel style={{ marginTop: 0 }}>
-                    <Label>Writer</Label>
-                    <Input onChangeText={(writer) => this.setState({ writer })}
-                      value={this.state.writer} />
-                  </Item>
-
-                  <Item floatingLabel>
-                    <Label>Description</Label>
-                    <Input onChangeText={(description) => this.setState({ description })}
-                      value={this.state.description} />
-                  </Item>
-
-                  <Item floatingLabel>
-                    <Label>Location</Label>
-                    <Input onChangeText={(location) => this.setState({ location })}
-                      value={this.state.location} />
-                  </Item>
-
-                  <Item floatingLabel>
-                    <Label>Categori</Label>
-                    <Input onChangeText={(id_category) => this.setState({ id_category })}
-                      value={this.state.id_category} />
-                  </Item>
-                  <View style={{
-                    marginTop: 40, flex: 1,
-                    flexDirection: 'row',
-                    alignItems: 'center'
-                  }}>
-                    <Button warning onPress={this.toggleModal} style={{ width: "45%", marginLeft: 10, textAlign: "center" }}><Text style={{ textAlign: "center" }}> Cancel </Text></Button>
-                    <Button primary style={{ width: "45%", marginLeft: 10, textAlign: "center" }} onPress={this.prosesInput}><Text style={{ textAlign: "center" }}> Donate </Text></Button>
-                  </View>
-                </Form>
-                {/* <Button block warning onPress={this.toggleModal} style={{marginTop:10}}>
+            <Item floatingLabel>
+              <Label>Categori</Label>
+              <Input onChangeText={(id_category) => this.setState({ id_category })}
+                value={this.state.id_category} />
+            </Item>
+            <View style={{
+              marginTop: 40, flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+              <Button warning onPress={this.toggleModal} style={{ width: "45%", marginLeft: 10, textAlign: "center", textAlign: "center" }}><Text style={{ textAlign: "center" }}> Cancel </Text></Button>
+              <Button primary style={{ width: "45%", marginLeft: 10, }} onPress={this.prosesInput}><Text> Donate </Text></Button>
+            </View>
+          </Form>
+          {/* <Button block warning onPress={this.toggleModal} style={{marginTop:10}}>
             <Text>Cancel</Text>
           </Button> */}
 
-              </Content>
-            </View>
-          </Modal>
-        </View>
+
+        </Overlay>
 
         {/* end modal donate */}
 
@@ -355,6 +393,15 @@ class Home extends Component {
   }
 
 }
+
+const styles = StyleSheet.create({
+  list: {
+    justifyContent: 'center',
+    flexDirection: 'column',
+    marginLeft: 10
+    // flexWrap: 'wrap',
+  }
+});
 
 const mapStateToProps = state => {
   return {

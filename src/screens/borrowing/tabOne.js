@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
-import { Content, List, Left, Thumbnail, ListItem, Text, View, Body, Right, Button, } from 'native-base'
+import { AsyncStorage, Image, FlatList, ActivityIndicator } from 'react-native';
+import { Content, List, Left, Thumbnail, ListItem, Text, View, Body, Right, Button, Card, CardItem, } from 'native-base'
 import { connect } from 'react-redux'
 import { borrowBookUser } from '../../redux/actions/loanbooks'
 import { isMetaProperty } from '@babel/types';
+import Modal from "react-native-modal";
+import { Overlay } from 'react-native-elements';
 class tabOne extends Component {
     constructor(props) {
         super(props);
@@ -13,7 +15,15 @@ class tabOne extends Component {
             id_user: "",
             role_id: "",
             token: "",
-            isloading: true
+            isloading: true,
+            isModalVisible: false,
+            dataShow: "",
+            isVisible: false,
+            loading: true,
+            data: "",
+            error: false,
+            refreshing: false,
+            page: 1,
         };
 
         AsyncStorage.getItem('card_number', (error, result) => {
@@ -54,30 +64,74 @@ class tabOne extends Component {
             }
         });
     }
-    componentDidMount = async () => {
-        console.warn("blablaba")
+    toggleModal = (data) => {
+
+        this.setState({
+            dataShow: data
+        })
+        this.setState({ isVisible: !this.state.isVisible });
+        console.warn(this.state.dataShow)
+    };
+
+    handleReflesh = () => {
+        this.setState(
+            {
+                page: 1,
+                refreshing: true,
+                seed: this.state.seed + 1
+            },
+            () => {
+                this.getBorrow();
+            }
+        )
+    }
+
+    handleLoadMore = () => {
+        this.setState(
+            {
+                loading: true,
+                page: this.state.page + 1
+            },
+            () => {
+                this.getdataBook();
+            }
+        )
+    }
+    getBorrow = () => {
+        this.setState({ loading: true })
         setTimeout(async () => {
             await this.props.dispatch(borrowBookUser(this.state.card_number, {
                 "authorization": "jangan-coba-coba",
                 "x-access-token": "bearer " + this.state.token,
                 "x-control-user": this.state.id_user
             }))
-        }, 2000)
-        // setTimeout(async () => {
-        // await this.props.dispatch(borrowBookUser(123123, {
-        //     "authorization": "jangan-coba-coba",
-        //     "x-access-token": "bearer " + this.state.token,
-        //     "x-control-user": this.state.id_user
-        // }))
-        //     console.log(this.props.borrowUser)
-        // }, 1000)
+                .then(res => {
+                    this.setState({
+                        data: this.state.page === 1 ? res.action.payload.data.result : [...this.state.data, ...res.action.payload.data.result],
+                        error: res.error || null,
+                        loading: false,
+                        refreshing: false
+                    });
+                })
+            console.warn(this.state.data)
+        }, 3000)
 
 
+    }
+    renderFooter = () => {
+        // if (!this.state.loading) return null;
+
+        return (
+            <View>
+                <ActivityIndicator size="large" color="#0000ff" width={10} />
+            </View>
+        )
+    }
 
 
-        // .then((response) => {
-        //     // console.warn(response)
-        // })
+    componentDidMount = () => {
+
+        this.getBorrow()
 
     }
 
@@ -87,9 +141,14 @@ class tabOne extends Component {
         return (
             <View>
                 <List>
-                    {this.props.borrowUser.map((item) => {
-                        if (item.information !== "SELESAI") {
-                            return (
+                    {(this.state.loading) ? <View>
+                        <ActivityIndicator size="large" color="#0000ff" width={10} />
+                    </View> : <View></View>}
+                    <FlatList
+                        data={this.state.data}
+                        renderItem={({ item }) => {
+                            if (item.information !== "SELESAI") return (
+
                                 <ListItem thumbnail>
                                     <Left>
                                         <Thumbnail square source={{ uri: item.image }} />
@@ -100,17 +159,73 @@ class tabOne extends Component {
                                         <Text note numberOfLines={2}>status : {item.information}</Text>
                                     </Body>
                                     <Right>
-                                        <Button transparent>
+                                        <Button transparent onPress={() => this.toggleModal(item)}>
                                             <Text>View</Text>
                                         </Button>
                                     </Right>
                                 </ListItem>
-                            )
-                        }
 
-                    })}
+                            )
+                        }}
+                        // onEndReached={this.handleLoadMore}
+                        onEndThreshold={500}
+                    // ListFooterComponent={this.renderFooter}
+                    // refreshing={this.state.refreshing}
+                    // onRefresh={this.handleReflesh}
+                    />
+
+
+
                 </List>
-            </View>
+
+
+                <Overlay
+                    isVisible={this.state.isVisible}
+                    windowBackgroundColor="rgba(0, 0, 0, 0.5)"
+                    overlayBackgroundColor="none"
+                    width={300}
+                    height="auto"
+                >
+                    <Card style={{ marginTop: -9, marginRight: -9, marginLeft: -9, marginBottom: -9 }}>
+                        <CardItem header bordered>
+                            <Text>Detail Borrow</Text>
+                        </CardItem>
+                        <CardItem bordered>
+                            <Body>
+                                <View style={{ alignItems: 'center', width: "100%", marginBottom: 5, }}>
+                                    <Image source={{ uri: this.state.dataShow.image }}
+                                        style={{ width: 200, height: 200 }} />
+                                </View>
+
+                            </Body>
+                        </CardItem>
+                        <CardItem footer bordered>
+                            <Text>Title : {this.state.dataShow.title}</Text>
+                        </CardItem>
+                        <CardItem footer bordered>
+                            <Text>Writer : {this.state.dataShow.writer}</Text>
+                        </CardItem>
+                        <CardItem footer bordered>
+                            <Text>Expired date : {this.state.dataShow.expired_date}</Text>
+                        </CardItem>
+                        <CardItem footer bordered>
+                            <Text>Status : {this.state.dataShow.information}</Text>
+                        </CardItem>
+                        <CardItem footer bordered>
+                            <Button warning onPress={this.toggleModal} style={{ width: "45%", marginLeft: 10, textAlign: "center" }}><Text style={{ textAlign: "center" }}> Cancel </Text></Button>
+                        </CardItem>
+
+                    </Card>
+
+
+                </Overlay>
+                {/* modal donate */}
+
+
+                {/* end modal donate */}
+
+
+            </View >
         );
     }
 }

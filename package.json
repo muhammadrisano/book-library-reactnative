@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "react": "16.8.6",
-    "react-native": "0.60.4"
+    "react-native": "0.60.4",
+    "react-native-elements": "^1.1.0"
   },
   "devDependencies": {
     "@react-native-community/async-storage": "^1.6.1",
