@@ -297,7 +297,7 @@ class Home extends Component {
               <CardItem style={{ borderRadius: 10, backgroundColor: "rgb(224, 217, 220)" }}>
                 <Left>
 
-                  <Text>{item.name}</Text>
+                  <Text style={{ color: "grey" }}>{item.name}</Text>
 
                 </Left>
               </CardItem>
