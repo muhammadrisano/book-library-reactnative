@@ -36,9 +36,9 @@ class Login extends Component {
         Alert.alert("okeoke")
         this.props.navigation.navigate("Home")
       })
-    // .catch(
-    //   Alert.alert("password salah")
-    // )
+      .catch(
+        Alert.alert("password salah")
+      )
   }
 
 

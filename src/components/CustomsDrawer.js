@@ -51,6 +51,8 @@ class CustomsDrawer extends Component {
         });
     }
 
+
+
     render() {
         return (
             <Container>
@@ -78,44 +80,44 @@ class CustomsDrawer extends Component {
 
                         </ListItem>
 
-                        {(this.state.id_user === null) ?
-                            <View>
-                                <ListItem onPress={() => this.props.navigation.navigate('Login')}>
-                                    <Left>
-                                        <Text>Login</Text>
-                                    </Left>
-                                    <Right>
-                                        <Icon name="arrow-forward" />
-                                    </Right>
-                                </ListItem>
+                        <View>
+                            <ListItem onPress={() => this.props.navigation.navigate('Login')}>
+                                <Left>
+                                    <Text>Login</Text>
+                                </Left>
+                                <Right>
+                                    <Icon name="arrow-forward" />
+                                </Right>
+                            </ListItem>
 
-                                <ListItem onPress={() => this.props.navigation.navigate('Register')} >
-                                    <Left>
-                                        <Text>Register</Text>
-                                    </Left>
-                                    <Right>
-                                        <Icon name="arrow-forward" />
-                                    </Right>
-                                </ListItem>
-                            </View> : <View>
+                            <ListItem onPress={() => this.props.navigation.navigate('Register')} >
+                                <Left>
+                                    <Text>Register</Text>
+                                </Left>
+                                <Right>
+                                    <Icon name="arrow-forward" />
+                                </Right>
+                            </ListItem>
+                        </View>
+                        <View>
 
-                                <ListItem onPress={() => this.props.navigation.navigate('Borrowing')} >
-                                    <Left>
-                                        <Text>Borrowing</Text>
-                                    </Left>
-                                    <Right>
-                                        <Icon name="arrow-forward" />
-                                    </Right>
-                                </ListItem>
-                                <ListItem onPress={() => this.props.navigation.navigate('Logout')} >
-                                    <Left>
-                                        <Text>Logout</Text>
-                                    </Left>
-                                    <Right>
-                                        <Icon name="arrow-forward" />
-                                    </Right>
-                                </ListItem>
-                            </View>}
+                            <ListItem onPress={() => this.props.navigation.navigate('Borrowing')} >
+                                <Left>
+                                    <Text>Borrowing</Text>
+                                </Left>
+                                <Right>
+                                    <Icon name="arrow-forward" />
+                                </Right>
+                            </ListItem>
+                            <ListItem onPress={() => this.props.navigation.navigate('Logout')} >
+                                <Left>
+                                    <Text>Logout</Text>
+                                </Left>
+                                <Right>
+                                    <Icon name="arrow-forward" />
+                                </Right>
+                            </ListItem>
+                        </View>
 
                     </List>
                 </Content>

@@ -31,7 +31,8 @@ class Home extends Component {
       seed: 1,
       error: null,
       refreshing: false,
-      jumlahpage: null
+      jumlahpage: null,
+      downtouch: true,
     }
   }
 
@@ -146,12 +147,14 @@ class Home extends Component {
             error: res.error || null,
             loading: false,
             refreshing: false,
-            jumlahpage: Math.ceil(parseInt(res.action.payload.data.jumlah) / 12)
+            jumlahpage: Math.ceil(parseInt(res.action.payload.data.jumlah) / 12),
+            downtouch: true
           });
           if (this.state.page > this.state.jumlahpage) {
             this.setState({
               loading: false,
-              error: true
+              error: true,
+              downtouch: false
             })
             Alert.alert("sorry the page is up ")
 
@@ -194,28 +197,35 @@ class Home extends Component {
   };
 
   handleReflesh = () => {
+
     this.setState(
       {
         page: 1,
         refreshing: true,
-        seed: this.state.seed + 1
+        seed: this.state.seed + 1,
+        downtouch: true
       },
       () => {
         this.getdataBook();
       }
     )
+
+
   }
 
   handleLoadMore = () => {
-    this.setState(
-      {
-        loading: true,
-        page: this.state.page + 1
-      },
-      () => {
-        this.getdataBook();
-      }
-    )
+    if (this.state.downtouch) {
+      this.setState(
+        {
+          loading: true,
+          page: this.state.page + 1,
+          downtouch: false,
+        },
+        () => {
+          this.getdataBook();
+        }
+      )
+    }
   }
 
   renderHeader = () => {
@@ -227,7 +237,6 @@ class Home extends Component {
   }
 
   renderFooter = () => {
-    // if (!this.state.loading) return null;
 
     return (
       <View>
@@ -258,14 +267,11 @@ class Home extends Component {
             </Button>
           </Right>
         </Header>
-        {/* <ScrollView> */}
+
         <View style={{ marginTop: 20, width: '90%', marginRight: 'auto', marginLeft: 'auto' }}>
 
 
         </View>
-
-
-        {/* card bokok */}
 
 
 
@@ -305,26 +311,14 @@ class Home extends Component {
 
           )}
           onEndReached={this.handleLoadMore}
-          onEndThreshold={140}
+          onEndThreshold={50}
           ListHeaderComponent={this.renderHeader}
           ListFooterComponent={this.renderFooter}
           refreshing={this.state.refreshing}
           onRefresh={this.handleReflesh}
-        // ItemSeparatorComponent={this.renderSeparator}
-        // listHeaderComponent={this.renderSeparator}
         />
 
 
-
-
-
-
-
-
-
-
-        {/* </ScrollView> */}
-        {/* modal donate */}
         <Overlay
           isVisible={this.state.isVisible}
           windowBackgroundColor="rgba(0, 0, 0, .5)"
@@ -344,7 +338,6 @@ class Home extends Component {
 
 
             <Button info onPress={this.chooseFile.bind(this)} transparent><Text style={{ fontSize: 16, marginTop: 22 }}>Upload Image </Text></Button>
-            {/* <Button title="Choose Photo" onPress={this.handleChoosePhoto} /> */}
 
             <Item floatingLabel style={{ marginTop: 0 }}>
               <Label>Writer</Label>
