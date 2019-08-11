@@ -6,7 +6,7 @@ import { existsTypeAnnotation } from '@babel/types';
 export const borrowuser = (data, header) => {
     return {
         type: 'BORROW_USER',
-        payload: axios.post('http://192.168.6.126:4000/loanbooks', data, {
+        payload: axios.post('http://libraryapi.muhammadrisano.online/loanbooks', data, {
             headers: header,
         }),
     }
@@ -15,7 +15,7 @@ export const borrowuser = (data, header) => {
 export const borrowBookUser = (data, header) => {
     return {
         type: 'BORROW_BOOK_USER',
-        payload: axios.get('http://192.168.6.126:4000/loanbooks/cardnumber/' + data, {
+        payload: axios.get('http://libraryapi.muhammadrisano.online/loanbooks/cardnumber/' + data, {
             headers: header,
         }),
     }
@@ -24,7 +24,7 @@ export const borrowBookUser = (data, header) => {
 export const getAllborrow = (header) => {
     return {
         type: 'GET_ALL_BORROW',
-        payload: axios.get('http://192.168.6.126:4000/loanbooks/', {
+        payload: axios.get('http://libraryapi.muhammadrisano.online/loanbooks/', {
             headers: header,
         }),
     }
@@ -33,7 +33,7 @@ export const getAllborrow = (header) => {
 export const getConfirmborrow = () => {
     return {
         type: 'GET_CONFIRM_BORROW',
-        payload: axios.get('http://192.168.6.126:4000/loanbooks/confirm/get', {
+        payload: axios.get('http://libraryapi.muhammadrisano.online/loanbooks/confirm/get', {
             headers: { "authorization": "jangan-coba-coba" },
         })
     }
@@ -41,7 +41,7 @@ export const getConfirmborrow = () => {
 export const prosesConfirmBorrow = (id_loanbook, data) => {
     return {
         type: 'PROSES_CONFIRM_BORROW',
-        payload: axios.patch('http://192.168.6.126:4000/loanbooks/prosesconfirm/' + id_loanbook, data, {
+        payload: axios.patch('http://libraryapi.muhammadrisano.online/loanbooks/prosesconfirm/' + id_loanbook, data, {
             headers: { "authorization": "jangan-coba-coba" }
         })
     }
@@ -50,7 +50,7 @@ export const prosesConfirmBorrow = (id_loanbook, data) => {
 export const updateBorrow = (id_loanbook, data) => {
     return {
         type: 'UPDATE_BORROW',
-        payload: axios.patch('http://192.168.6.126:4000/loanbooks/updateborrow/' + id_loanbook, data, {
+        payload: axios.patch('http://libraryapi.muhammadrisano.online/loanbooks/updateborrow/' + id_loanbook, data, {
             headers: { "authorization": "jangan-coba-coba" }
         })
     }
@@ -58,7 +58,7 @@ export const updateBorrow = (id_loanbook, data) => {
 export const cancelborrow = (id_loanbook, data) => {
     return {
         type: 'CANCEL_BORROW',
-        payload: axios.patch('http://192.168.6.126:4000/loanbooks/cancelborrow/' + id_loanbook, data, {
+        payload: axios.patch('http://libraryapi.muhammadrisano.online/loanbooks/cancelborrow/' + id_loanbook, data, {
             headers: { "authorization": "jangan-coba-coba" }
         })
     }

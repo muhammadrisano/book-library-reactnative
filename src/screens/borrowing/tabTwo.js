@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, ActivityIndicator } from 'react-native';
 import { Content, List, Left, Thumbnail, ListItem, Text, View, Body, Right, Button, } from 'native-base'
 import { connect } from 'react-redux'
 import { borrowBookUser } from '../../redux/actions/loanbooks'
@@ -14,14 +14,14 @@ class tabTwo extends Component {
             id_user: "",
             role_id: "",
             token: "",
-            isloading: true
+            loading: true
         };
 
         AsyncStorage.getItem('card_number', (error, result) => {
             if (result) {
                 this.setState({
                     card_number: result,
-                    isloading: false
+
                 });
             }
         });
@@ -63,6 +63,9 @@ class tabTwo extends Component {
                 "x-access-token": "bearer " + this.state.token,
                 "x-control-user": this.state.id_user
             }))
+                .then((response) => {
+                    this.setState({ loading: false })
+                })
         }, 1000)
         // setTimeout(async () => {
         // await this.props.dispatch(borrowBookUser(123123, {
@@ -87,6 +90,9 @@ class tabTwo extends Component {
         console.log(this.props.borrowUser)
         return (
             <View>
+                {(this.state.loading) ? <View>
+                    <ActivityIndicator size="large" color="#0000ff" width={10} />
+                </View> : <View></View>}
                 <List>
                     {this.props.borrowUser.map((item) => {
                         if (item.information === "SELESAI") {
