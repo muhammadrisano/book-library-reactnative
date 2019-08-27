@@ -15,8 +15,7 @@ Music Game App is an application playing game that you must touch a button and f
 
 - Clone or download this repo first
 - Open your terminal 
-- cd book-library-reactnative
--`npm install` and `react-native link`
+- `cd book-library-reactnative`, `npm install` and `react-native link`
 - After that, run backend first
 - Connect your phone to the pc or laptop and make sure your phone is connected with debugging mode
 - Finnaly, type `react-native run-android` and wait for the process to complete
