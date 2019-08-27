@@ -34,20 +34,3 @@ Music Game App is an application playing game that you must touch a button and f
 ### Leaderboard Page
 <img src="https://i.imgur.com/qOacRzp.jpg" title="source: imgur.com" width='500px'/>
   
-## Related Project
- 
-* In this repository only for the frontend section, for the backend section can be seen [here]().
-
-## Maker
-<center>
-  <table>
-    <tr>
-      <td align="center">
-        <a href="https://github.com/mhdrare">
-          <img width="100" src="https://avatars3.githubusercontent.com/u/44925089?s=460&v=4" alt="Khusni Jafar"><br/>
-          <sub><b>Khusni Jafar</b></sub>
-        </a>
-      </td>
-    </tr>
-  </table>
-</center>
